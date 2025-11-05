@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: diro_mysql
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-diro_db}
+      MYSQL_USER: ${MYSQL_USER:-diro_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - diro_network
+
+  backend:
+    build:
+      context: ./diro-be
+      dockerfile: Dockerfile
+    container_name: diro_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: ${DB_HOST:-diro_mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:-diro_user}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-diro_db}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      - mysql
+    networks:
+      - diro_network
+
+  frontend:
+    build:
+      context: ./diro-fe
+      dockerfile: Dockerfile
+    container_name: diro_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    networks:
+      - diro_network
+
+volumes:
+  mysql_data:
+
+networks:
+  diro_network:
+    driver: bridge

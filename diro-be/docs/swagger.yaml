@@ -1,0 +1,231 @@
+basePath: /api
+definitions:
+  models.Court:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.CourtAvailability:
+    properties:
+      court:
+        $ref: '#/definitions/models.Court'
+      timeslots:
+        items:
+          $ref: '#/definitions/models.Timeslot'
+        type: array
+    type: object
+  models.DayAvailability:
+    properties:
+      courts:
+        items:
+          $ref: '#/definitions/models.CourtAvailability'
+        type: array
+      date:
+        type: string
+    type: object
+  models.Timeslot:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        description: 'Format: "HH:MM"'
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      start_time:
+        description: 'Format: "HH:MM"'
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.XenditWebhookItem:
+    properties:
+      category:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+      quantity:
+        type: integer
+      url:
+        type: string
+    type: object
+  models.XenditWebhookPayload:
+    properties:
+      amount:
+        type: integer
+      created:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      ewallet_type:
+        type: string
+      external_id:
+        type: string
+      failure_redirect_url:
+        type: string
+      id:
+        type: string
+      is_high:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/models.XenditWebhookItem'
+        type: array
+      merchant_name:
+        type: string
+      paid_amount:
+        type: integer
+      paid_at:
+        type: string
+      payment_channel:
+        type: string
+      payment_id:
+        type: string
+      payment_method:
+        type: string
+      payment_method_id:
+        type: string
+      status:
+        type: string
+      success_redirect_url:
+        type: string
+      updated:
+        type: string
+      user_id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API untuk sistem reservasi lapangan olahraga Diro
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Diro API
+  version: "1.0"
+paths:
+  /api/reservations:
+    post:
+      consumes:
+      - application/json
+      description: Create a new reservation for a court at specific date and timeslot
+      parameters:
+      - description: Reservation data
+        in: body
+        name: reservation
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'reservation: object, invoice_url: string'
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 'error: message'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new reservation
+      tags:
+      - reservations
+  /api/reservations/availability:
+    get:
+      consumes:
+      - application/json
+      description: Get availability for a specific day including courts and available
+        timeslots
+      parameters:
+      - description: Date in YYYY-MM-DD format
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DayAvailability'
+        "400":
+          description: 'error: message'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'error: message'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get day availability
+      tags:
+      - reservations
+  /api/v1/webhooks/xendit:
+    post:
+      consumes:
+      - application/json
+      description: Handle payment webhook from Xendit
+      parameters:
+      - description: Xendit webhook payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.XenditWebhookPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message: webhook received'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 'error: message'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'error: message'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Handle Xendit webhook
+      tags:
+      - webhooks
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

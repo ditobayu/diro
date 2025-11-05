@@ -1,0 +1,9 @@
+-- Create timeslots table
+CREATE TABLE timeslots (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    start_time VARCHAR(5) NOT NULL, -- Format: HH:MM
+    end_time VARCHAR(5) NOT NULL,   -- Format: HH:MM
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
